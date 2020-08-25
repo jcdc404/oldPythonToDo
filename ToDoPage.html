@@ -1,0 +1,570 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+
+	<title>To-Do!</title>
+	<meta name="description" content="To-Do! Your favorite task list">
+	<meta name="author" content="JC">
+
+	<style>
+	table { border-collapse: collapse;
+		margin-left: auto;
+		margin-right: auto;
+		width: 100%
+		}
+	
+	table tr{ border:  1px solid black;
+			border-left: 0;
+			border-right: 0;
+			}
+
+	table tr:last-child{ border: 0}
+	
+	th{
+		background:  lightgray;
+		text-transform: capitalize;
+		text-align: center;
+	}
+	
+	td {
+		text-align: center;
+		min-width: 33%;
+		max-width:34%;}
+	
+	body{
+		margin: auto;
+		max-width: 640px;
+		width: 80%;
+	}
+	
+	#options{display:table;
+		height: 20px;
+	}
+	#delBtn, #markBtn{
+
+	}
+	#buttons{
+		width: 100%;
+			}
+	#buttons ul{
+		text-align: center;
+		margin-top: 0px;
+		padding:0;
+		width:100%;
+		list-style: none;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+	}
+	#buttons ul li:first-child{
+		border-radius: 19px 0 0 0;
+		border-bottom: 1px solid black;
+		border-left: 0;
+	}
+	#buttons ul li:last-child{
+		border-radius: 0 19px 0 0;
+		border-bottom: 1px solid black;
+		border-right: 0;
+	}
+	#buttons ul li{
+		line-height: 30px;
+		background-color: #f9a83e ;
+		border: 1px solid black;
+		border-top: 0;
+		display: inline-block;
+		margin:auto;
+		width:25%;
+		height:30px;
+	}
+	#tasklist {
+		border-radius: 20px;
+		margin: auto;
+		border: 1px;
+		border-style: solid;
+		border-color: black;
+		width: 100%;
+		max-width: 95%;
+		min-height: 100px;
+		max-height: 80%;
+		}
+	#taskcontent{
+		overflow: auto;
+		margin:auto;
+		max-width:100%;
+		max-height: 600px; 
+		}
+	#taskcontent li{
+		height: 30px;
+		width: 100%;
+		
+		}	
+	
+	#pageTitle, #taskBoxTitle{
+		text-align: center;
+		color: #f9a83e;
+	}
+	#creation{
+		margin: auto;
+		width: 50%;
+	}
+	#newTaskInput, #create-button{
+		display: block;
+		margin: auto;
+	}
+	#newTaskInput{
+		width: 100%;
+		border-radius: 20px;
+	}
+	</style>
+
+</head>
+
+<body>
+<h1 id="pageTitle">To-Do!</h1>
+	<div id="Welcome"></div>
+	<div id="creation">
+	<input type="text" name="NewTaskInput" id="newTaskInput">
+	<button type="button" name="Create" id="create-button" onclick="newTask()">Create!</button>
+	</div>
+	<hr>
+	<h2 id="taskBoxTitle">MyTasks</h2>
+	<h3>Double Click a task to edit</h3>
+	<div id="tasklist">
+	<div id="buttons">
+		<ul id="buttonUL">
+			<li id="complete">In/Complete</li>
+			<li id="delItem">Delete</li>
+			<li id="dueDate">Due Date</li>
+			<li id="changeText">Change Text</li>
+		</ul>
+	</div>
+	<div id = "options">
+	</div>
+	<div id="taskcontent">
+
+	</div>
+	</div>
+	<button onclick="logout()">LogOut</button>
+
+
+	<script >
+	// add items to buttons and targets, test if in buttons or targets
+var	buttons = [document.getElementById("complete"),document.getElementById("delItem"),document.getElementById("dueDate"),document.getElementById("changeText")];
+var	targets = [];
+var	options = [];
+var delListen,markListen,dDListen,txtListen; 
+
+	function targetInTargetClass(e){
+	///test if the item clicked on is a target button or in the options div
+	//this is used to decide whether or not to bind to the current target, or remove objects that may be bound to it
+		for(i=0;i<targets.length;i++){
+			if (e.target==targets[i]){
+					return true
+				}
+		}
+		for(i=0;i<buttons.length;i++){
+			if (e.target==buttons[i]){
+					return true
+				}
+		}
+		for(i=0;i<options.length;i++){
+			if (e.target==options[i]){
+					return true
+				}
+		}
+		return false
+	}
+	function buttonsTearDown(){
+	///remove all button items then recreate them-- this is to remove their binding
+		for(i=document.getElementById("buttonUL").childElementCount-1; i>=0;i--){
+ 			document.getElementById("buttonUL").children[i].parentNode.removeChild(document.getElementById("buttonUL").children[i])
+	 		}
+	 		var complete = document.createElement("li");
+			var delItem = document.createElement("li");
+			var dueDate = document.createElement("li");
+			var changeText = document.createElement("li");
+			complete.setAttribute("id","complete");
+			delItem.setAttribute("id","delItem");
+			dueDate.setAttribute("id","dueDate")
+			changeText.setAttribute("id","changeText")
+			complete.innerHTML = "In/Complete";
+			delItem.innerHTML = "Delete";
+			dueDate.innerHTML = "Due Date";
+			changeText.innerHTML = "Change Text";
+			document.getElementById("buttonUL").appendChild(complete);
+			document.getElementById("buttonUL").appendChild(delItem);
+			document.getElementById("buttonUL").appendChild(dueDate);
+			document.getElementById("buttonUL").appendChild(changeText);
+			buttons=[complete,delItem,dueDate,changeText];
+	 	}
+
+	document.addEventListener("click", function(e){
+//	event listener on the document
+//	this allows me to have an action based on if one of the "targets" is clicked OFF of 
+		if(!(targetInTargetClass(e))){
+			if(document.getElementById("target")){
+		 		target.style.backgroundColor = "";
+		 		target.removeAttribute("id");
+		 		buttonsTearDown();
+		 	}
+			if(targets.length>0){
+			for(var i=targets.length; i>0; i--) {
+				targets.pop()
+				}			
+			}
+			for(var i=options.length-1; i>0; i--) {
+				options.pop()
+				}
+			for(i=document.getElementById("options").children.length-1;i>=0;i--){
+				document.getElementById("options").children[0].parentNode.removeChild(document.getElementById("options").children[0]);
+			}			
+			}	
+	},false);
+
+	function popup(e){
+		buttonsTearDown();
+		//if a previous target element exists, remove it 
+		if(document.getElementById("target")){
+		 	target.style.background = "";
+		 	target.removeAttribute("id");
+		 }
+		if (!readCookie("Username")){
+			window.location.href= "/" 
+		}
+		// set the variable event item to the currently recognized target
+		var eventitem = e.currentTarget;
+		eventitem.setAttribute("id","target");
+		targets.push(eventitem);
+		for(i=0; i<eventitem.children.length; i++){
+			targets.push(eventitem.children[i]);
+		}
+		eventitem.style.background = "lightgreen";
+		var jsonItem = {};
+		jsonItem.timecreated = eventitem.getAttribute("timecreated");
+		jsonItem.user = readCookie("Username");
+		jsonItem.text = eventitem.children[0].innerHTML;
+		jsonItem.dueDate = eventitem.children[1].innerHTML;
+		jsonItem.status = eventitem.getAttribute("status");
+		document.getElementById("complete").addEventListener("click",markTask.bind(jsonItem),false);
+		document.getElementById("delItem").addEventListener("click",delTask.bind(jsonItem),false);
+		document.getElementById("dueDate").addEventListener("click",chgDD.bind(jsonItem),false);
+		document.getElementById("changeText").addEventListener("click",chgTxt.bind(jsonItem),false);
+	}
+	
+	function chgDD(e){
+
+		var	inputDD, inputDDtime, inputDDbtn;
+		//if there is no target do not run this function
+		if(!(document.getElementById("target"))){
+			return true;
+		}
+		if(document.getElementById("options").childElementCount >0){
+			for(i=document.getElementById("options").childElementCount-1;i>=0;i--){
+				document.getElementById("options").children[i].parentNode.removeChild(document.getElementById("options").children[i]);
+			}
+		}
+		if(!(document.getElementById("inputDDinput"))){
+			inputDD = document.createElement("input");
+			inputDDtime = document.createElement("input");
+			inpDDBtn = document.createElement("BUTTON")
+			inputDD.setAttribute("id","inputDDinput");
+			inputDD.setAttribute("type","date");
+			inputDDtime.setAttribute("id","inputDDtime")
+			inputDDtime.setAttribute("type","time")
+			inpDDBtn.innerHTML = "Change"
+			inpDDBtn.addEventListener("click",sendDate.bind(this),false);
+		var	locat = document.getElementById("options")
+			options=[];
+			options.push(inputDD);
+			options.push(inputDDtime);
+			options.push(inpDDBtn);	
+			locat.appendChild(inputDD);
+			locat.appendChild(inputDDtime);		
+			locat.appendChild(inpDDBtn);
+		}
+
+		function sendDate(e){
+			if(!(document.getElementById("target"))){
+				return true;
+			}
+			if(document.getElementById("inputDDinput").value==""){
+				newDate = "";
+			}
+			else if(document.getElementById("inputDDinput").value!="" && document.getElementById("inputDDtime").value==""){
+				newDate = document.getElementById("inputDDinput").value;
+			}
+			else{
+				newDate = document.getElementById("inputDDinput").value +" at " +document.getElementById("inputDDtime").value;	
+			}
+			
+			makeRequest('post', '/ToDoPage', {"change_date":this,"newDate":newDate})
+			.then(function(result){
+				var Result = JSON.parse(result);
+				current_tasks = {};
+			for (i=0; i<Result.length; i++){
+				current_tasks[i]={};
+			 	current_tasks[i].text = Result[i][0];
+			 	current_tasks[i].status = Result[i][2];
+			 	current_tasks[i].createdDate = Result[i][3];
+			 	current_tasks[i].dueDate = Result[i][4];
+			}
+			createTasks();
+				})
+			.catch(function(err){
+				console.log(err);
+			});
+		}
+
+	}
+
+	function chgTxt(e){
+	if(document.getElementById("options").childElementCount >0){
+		for(i=document.getElementById("options").childElementCount-1;i>=0;i--){
+			document.getElementById("options").children[i].parentNode.removeChild(document.getElementById("options").children[i]);
+		}
+	}
+		if(!(document.getElementById("changetxt"))) {
+		var	inputCT = document.createElement("input");
+			inputCT.setAttribute("type","text");
+			inputCT.setAttribute("id","changetxt");
+			inputCTBtn = document.createElement("button");
+			inputCTBtn.addEventListener("click",sendTxt.bind(this),false);
+			inputCTBtn.innerHTML = "Change";
+		var	locat = document.getElementById("options");
+			locat.appendChild(inputCT);
+			locat.appendChild(inputCTBtn);
+			options.push(inputCT);
+			options.push(inputCTBtn);
+		}
+		function sendTxt(e){
+		if(document.getElementById("changetxt").value==""){
+			return true
+		}
+		else{
+			newTxt = document.getElementById("changetxt").value;
+		}
+			makeRequest('post', '/ToDoPage', {"change_text":this,"newText":newTxt})
+			.then(function(result){
+				var Result = JSON.parse(result);
+				current_tasks = {};
+			for (i=0; i<Result.length; i++){
+				current_tasks[i]={};
+			 	current_tasks[i].text = Result[i][0];
+			 	current_tasks[i].status = Result[i][2];
+			 	current_tasks[i].createdDate = Result[i][3];
+			 	current_tasks[i].dueDate = Result[i][4];
+			}
+			createTasks();
+				})
+			.catch(function(err){
+				console.log(err);
+			});
+		}
+	}
+	function markTask(e){
+		if(!(document.getElementById("target"))){
+			return true;
+		}
+		if(this.status == "complete"){
+			makeRequest('post', '/ToDoPage', {"markitemInComp":this})
+			.then(function(result){
+			var Result = JSON.parse(result);
+			current_tasks = {};
+			for (i=0; i<Result.length; i++){
+				current_tasks[i]={};
+			 	current_tasks[i].text = Result[i][0];
+			 	current_tasks[i].status = Result[i][2];
+			 	current_tasks[i].createdDate = Result[i][3];
+			 	current_tasks[i].dueDate = Result[i][4];
+			}
+			createTasks();
+			}).catch(function(err){
+				console.log(err);
+			});
+		}
+		if(this.status == "" || this.status == "null"){
+			makeRequest('post', '/ToDoPage', {"markitemComp":this})
+			.then(function(result){
+			var Result = JSON.parse(result);
+			current_tasks = {};
+			for (i=0; i<Result.length; i++){
+				current_tasks[i]={};
+			 	current_tasks[i].text = Result[i][0];
+			 	current_tasks[i].status = Result[i][2];
+			 	current_tasks[i].createdDate = Result[i][3];
+			 	current_tasks[i].dueDate = Result[i][4];
+			}
+			createTasks();
+			}).catch(function(err){
+				console.log(err);
+			});
+		}
+	}
+	function delTask(e){
+		if(!(document.getElementById("target"))){
+			return true;
+		}
+		makeRequest('post', '/ToDoPage', {"delete":this})
+			.then(function(result){
+			var Result = JSON.parse(result);
+			current_tasks = {};
+			for (i=0; i<Result.length; i++){
+				current_tasks[i]={};
+			 	current_tasks[i].text = Result[i][0];
+			 	current_tasks[i].status = Result[i][2];
+			 	current_tasks[i].createdDate = Result[i][3];
+			 	current_tasks[i].dueDate = Result[i][4];
+			}
+			createTasks();
+			}).catch(function(err){
+				console.log(err);
+			});
+	}
+	
+
+	var current_tasks = {};
+	function logout(){
+		makeRequest("post", "/ToDoPage", {"deletecookies":"deletecookies"}).then(function(){
+			window.location.href = "/"
+		})
+	}
+
+	function newTask(){
+		if (!readCookie("Username")){
+		window.location.href= "/" 
+	}
+		var newitem = document.getElementById('newTaskInput').value;
+		var username = readCookie("Username")
+		if (newitem.length == 0){
+			return true;
+			}
+		makeRequest("post", "/ToDoPage", {"username":username ,"newitem":newitem})
+			.then(function(result){
+			var Result = JSON.parse(result)
+//			console.log(Result);
+			current_tasks = {};
+			for (i=0; i<Result.length; i++){
+			current_tasks[i]={}
+		 	current_tasks[i].text = Result[i][0];
+		 	current_tasks[i].status = Result[i][2];
+		 	current_tasks[i].createdDate = Result[i][3];
+		 	current_tasks[i].dueDate = Result[i][4];
+			}
+//			console.log(current_tasks);
+			createTasks();
+		});
+	}
+
+
+window.onload = 
+	makeRequest("post", "/getContent","")
+		.then(function(result){
+		var Result = JSON.parse(result)
+		current_tasks = {};
+		for (i=0; i<Result.length; i++){
+			current_tasks[i]={}
+		 	current_tasks[i].text = Result[i][0];
+		 	current_tasks[i].status = Result[i][2];
+		 	current_tasks[i].createdDate = Result[i][3];
+		 	current_tasks[i].dueDate = Result[i][4];
+		}
+		createTasks();
+		}).catch(function(err){
+			console.log(err);
+		});
+
+	function createTasks(){
+		if (!readCookie("Username")){
+		window.location.href= "/" 
+	}
+		if (document.getElementById("taskcontent").hasChildNodes()){
+			tasks = document.getElementById("taskcontent");
+			while (tasks.hasChildNodes()){
+				tasks.removeChild(tasks.lastChild)
+		}}
+		//optimize by only importing the tasks desired into the list then run a for loop for hte insert cell/innerHTML 
+		var cTasksObjKeys = [Object.keys(current_tasks[0])];
+		var newTable = document.createElement("Table");
+		var headRow = newTable.insertRow(0);
+		var tHead1 = document.createElement("th");
+//		var firstHCell = headRow.insertCell(-1);
+		tHead1.innerHTML = cTasksObjKeys[0][0];
+		var tHead3 = document.createElement("th");
+//		var thirdHCell = headRow.insertCell(-1);
+		tHead3.innerHTML = cTasksObjKeys[0][3];
+//		tHead1.appendChild(firstHCell);
+//		tHead3.appendChild(thirdHCell);
+		headRow.appendChild(tHead1);
+		headRow.appendChild(tHead3);
+		newTable.appendChild(headRow);
+		document.getElementById("taskcontent").appendChild(newTable);
+
+		for (i=0; i<Object.keys(current_tasks).length; i++){
+			var newrow = newTable.insertRow(-1);
+			newrow.setAttribute("id", "tabrow"+i);
+			newrow.addEventListener('dblclick', popup, false);
+			fcell = newrow.insertCell(-1);
+			tcell = newrow.insertCell(-1);
+			fcell.innerHTML = current_tasks[i].text;
+			tcell.innerHTML = current_tasks[i].dueDate;
+			newrow.setAttribute("timecreated",current_tasks[i].createdDate);
+			newrow.setAttribute("status",current_tasks[i].status);
+			if(newrow.getAttribute("status")=="complete"){newrow.style.textDecoration = "line-through";}	
+		}
+	}
+
+	function welcome(){
+		if (!document.getElementById("Welcome").hasChildNodes()){
+		var messageDiv = document.getElementById("Welcome");
+		var node = document.createElement('span');
+		var theMessage = "Welcome "+ readCookie("UserName");
+		node.appendChild(document.createTextNode(theMessage));
+		messageDiv.appendChild(node);
+		}
+	}
+
+function readCookie(name){
+	var cookies = document.cookie, ckarray={}, cks;
+	cks = cookies.split("; ");
+	for (i=0; i<cks.length; i++){
+		cks[i] = cks[i].split("=");
+		ckarray[cks[i][0]]=cks[i][1];}
+	return ckarray[name]    
+}
+
+function makeRequest(method, url, data){
+	return new Promise(function(resolve,reject){
+	var xhr= new XMLHttpRequest();
+		xhr.open(method,url,true);
+		xhr.onload = function(){
+			if (this.status==200){
+				resolve(xhr.response);
+			}
+			else{
+				reject({
+					status: this.status,
+					statusText: xhr.statusText
+				})
+			}
+		};
+		xhr.onerror = function(){
+			reject({
+				status: this.status,
+					statusText: xhr.statusText
+			});
+		}
+		if (method.toLowerCase() =="post"){
+			xhr.send(JSON.stringify(data));
+		}
+		else{
+			xhr.send(null);
+		}
+	
+});
+}
+
+	</script>
+</body>
+</html>

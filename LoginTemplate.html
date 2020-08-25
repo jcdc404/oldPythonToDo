@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<div id="title"></div>
+
+<div id="error"></div>
+
+<div id = "form">
+	<form action="/" method="post">
+		<label><b>Username</b></label>
+	    <input type="text" placeholder="Enter Username" name="username" required>
+
+	    <label><b>Password</b></label>
+	    <input type="password" placeholder="Enter Password" name="password" required>
+
+	    <button type="submit">Login</button>
+	</form>
+</div>
+<script>
+	function readCookie(name){
+		var cookies = document.cookie, ckarray={}, cks;
+		cks = cookies.split("; ");
+		for (i=0; i<cks.length; i++){
+			cks[i] = cks[i].split("=");
+			ckarray[cks[i][0]]=cks[i][1];}
+		return ckarray[name]    
+	}
+	
+	if(readCookie("error")){
+		error = readCookie("error");
+		errortext = document.createTextNode(error.slice(1,-1));
+		document.getElementById("error").appendChild(errortext);
+	}
+
+
+</script>
+</body>
+</html>
